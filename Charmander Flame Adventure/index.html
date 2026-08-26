@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Charmander's Flame Adventure — 파이리의 불꽃 모험</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      background:#060610;
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      min-height:100vh;font-family:'Courier New',monospace;
+      overflow:hidden;
+    }
+
+    /* ── 로딩 ── */
+    #loading{
+      position:fixed;inset:0;background:#060610;
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      z-index:200;gap:16px;
+    }
+    #loading .flame{font-size:3rem;animation:pulse 1s ease-in-out infinite alternate;}
+    #loading p{color:#f0c040;font-size:1rem;letter-spacing:.1em;}
+    #loading .bar-wrap{width:240px;height:6px;background:#222;border-radius:3px;overflow:hidden;}
+    #loading .bar{height:100%;width:0%;background:linear-gradient(90deg,#f04000,#f0c040);border-radius:3px;animation:load 1.8s ease-in-out infinite;}
+
+    /* ── 타이틀 ── */
+    #title-screen{
+      position:fixed;inset:0;
+      background:radial-gradient(ellipse at center, #1a0a00 0%, #060610 70%);
+      display:none;flex-direction:column;
+      align-items:center;justify-content:center;
+      z-index:100;gap:10px;
+    }
+    .t-flame{font-size:4rem;animation:flame 2s ease-in-out infinite alternate;}
+    .t-en{
+      font-size:.95rem;color:#cc8830;letter-spacing:.25em;margin-top:4px;
+    }
+    .t-ko{
+      font-size:2rem;color:#f0c040;
+      text-shadow:0 0 30px #f08000,0 0 60px #f04000;
+      letter-spacing:.1em;animation:flicker 4s infinite;
+    }
+    .t-sub{color:#996622;font-size:.8rem;margin-top:2px;}
+    .divider{width:200px;height:1px;background:linear-gradient(90deg,transparent,#f0c040,transparent);margin:18px 0;}
+
+    .t-btn{
+      padding:12px 48px;background:transparent;
+      border:2px solid #f0c040;color:#f0c040;
+      font-size:1rem;font-family:'Courier New',monospace;
+      cursor:pointer;letter-spacing:.2em;transition:all .2s;
+      text-transform:uppercase;
+    }
+    .t-btn:hover{background:#f0c040;color:#060610;box-shadow:0 0 20px #f0804080;}
+
+    .t-hint{font-size:.7rem;color:#555;margin-top:14px;letter-spacing:.1em;}
+
+    /* ── 게임 ── */
+    #game-wrapper{position:relative;display:none;}
+    canvas#game{display:block;image-rendering:pixelated;image-rendering:crisp-edges;}
+
+    /* ── 애니메이션 ── */
+    @keyframes pulse{from{transform:scale(1);}to{transform:scale(1.2);}}
+    @keyframes flame{from{transform:scale(1) rotate(-4deg);}to{transform:scale(1.15) rotate(4deg);}}
+    @keyframes flicker{0%,90%,100%{opacity:1;}95%{opacity:.6;}}
+    @keyframes load{0%{width:0%;}50%{width:70%;}100%{width:100%;}}
+  </style>
+</head>
+<body>
+
+<!-- 로딩 -->
+<div id="loading">
+  <div class="flame">🔥</div>
+  <p>불꽃을 불러오는 중...</p>
+  <div class="bar-wrap"><div class="bar"></div></div>
+</div>
+
+<!-- 타이틀 -->
+<div id="title-screen">
+  <div class="t-flame">🔥</div>
+  <p class="t-en">Charmander's Flame Adventure</p>
+  <h1 class="t-ko">파이리의 불꽃 모험</h1>
+  <p class="t-sub">꺼져가는 태초의 불씨를 되살리기 위한 여정</p>
+  <div class="divider"></div>
+  <button class="t-btn" id="startBtn">▶ 게임 시작</button>
+  <p class="t-hint">WASD · 방향키 이동 &nbsp;|&nbsp; 스페이스 대화</p>
+</div>
+
+<!-- 게임 캔버스 -->
+<div id="game-wrapper">
+  <canvas id="game"></canvas>
+</div>
+
+<script src="assets_b64.js"></script>
+<script src="game.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded',()=>{
+    const loading=document.getElementById('loading');
+    const title  =document.getElementById('title-screen');
+    const wrapper=document.getElementById('game-wrapper');
+
+    window._showTitle=()=>{
+      loading.style.display='none';
+      title.style.display='flex';
+    };
+
+    document.getElementById('startBtn').addEventListener('click',()=>{
+      title.style.display='none';
+      wrapper.style.display='block';
+      window._startGame();
+    });
+  });
+</script>
+</body>
+</html>
