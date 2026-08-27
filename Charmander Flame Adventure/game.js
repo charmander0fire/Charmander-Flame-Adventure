@@ -7,11 +7,12 @@ const TILE = 32;
 const MAP_COLS = 75;
 const MAP_ROWS = 60;
 
-const DIR = { DOWN:3, LEFT:1, RIGHT:2, UP:0 };
+const DIR = { DOWN:0, LEFT:1, RIGHT:2, UP:3 };
 // 파이리 스프라이트: row0=뒤(UP), row1=왼, row2=오른, row3=앞(DOWN) → 이전에 반전돼 있던 거 수정
-const DIR_ROW     = { [DIR.UP]:0, [DIR.LEFT]:1, [DIR.RIGHT]:2, [DIR.DOWN]:3 };
+// DIR: DOWN=0,LEFT=1,RIGHT=2,UP=3  → 시트: row0=뒤(UP),row1=왼,row2=오른,row3=앞(DOWN)
+const DIR_ROW = { 3:0, 1:1, 2:2, 0:3 };  // key=DIR값, value=시트행
 // NPC 스프라이트: row0=앞(DOWN), row1=왼, row2=오른, row3=뒤(UP)
-const NPC_DIR_ROW = { [DIR.DOWN]:0, [DIR.LEFT]:1, [DIR.RIGHT]:2, [DIR.UP]:3 };
+const NPC_DIR_ROW = { 0:0, 1:1, 2:2, 3:3 };  // key=DIR값, value=시트행
 
 const T = {
   GRASS:0, PATH:1, TREE:2, FLOWER:3, FOUNTAIN:4,
@@ -309,7 +310,7 @@ const INTRO_STORY = [
 //   게임 상태
 // =============================================
 const state = {
-  player: { tx:24, ty:22, dir:DIR.DOWN, frame:0, animTimer:0 },
+  player: { tx:24, ty:22, dir:DIR.DOWN, frame:0, animTimer:0, moving:false },
   npcs:   NPCS.map(n => ({...n, frame:0, animTimer:0, moveTimer:0})),
   camera: { x:0, y:0 },
   keys:   {},
@@ -420,7 +421,33 @@ function processMove(){
   p.dir=dir;
   const {dx,dy}=DIR_DELTA[dir];
   const nx=p.tx+dx, ny=p.ty+dy;
-  if(!isSolid(nx,ny)){ p.tx=nx; p.ty=ny; p.frame=(p.frame+1)%4; }
+  if(!isSolid(nx,ny)){ p.tx=nx; p.ty=ny; p.moving=true; }
+  else { p.moving=false; }
+}
+
+
+// =============================================
+//   플레이어 애니메이션 업데이트
+// =============================================
+function updatePlayer(dt){
+  const p=state.player;
+  if(p.moving){
+    p.animTimer+=dt;
+    if(p.animTimer>150){   // 150ms마다 프레임 전환 (걷기 속도)
+      p.animTimer=0;
+      p.frame=(p.frame+1)%4;
+    }
+  } else {
+    p.frame=0;             // 멈추면 대기 프레임(0)으로 복귀
+    p.animTimer=0;
+  }
+  // 키를 안 누르면 moving 해제
+  const anyMove=state.moveQueue.length>0||
+    state.keys['KeyW']||state.keys['ArrowUp']||
+    state.keys['KeyS']||state.keys['ArrowDown']||
+    state.keys['KeyA']||state.keys['ArrowLeft']||
+    state.keys['KeyD']||state.keys['ArrowRight'];
+  if(!anyMove) p.moving=false;
 }
 
 // =============================================
@@ -642,11 +669,14 @@ function drawTile(ctx,img,x,y,w,h){
   ctx.drawImage(img,x,y,w,h);
 }
 
-// ── 파이리 (버그 수정: DIR_ROW 반전 수정) ──
+// ── 파이리 스프라이트 렌더 ──
+// 시트: 4열(frame 0~3) × 4행(방향)
+// row0=UP(뒤), row1=LEFT, row2=RIGHT, row3=DOWN(앞)
 function drawPlayer(ctx,img,p,sx,sy){
   if(!img){ctx.fillStyle='#f0a030';ctx.fillRect(sx+4,sy+4,TILE-8,TILE-8);return;}
-  const row=DIR_ROW[p.dir];   // UP→0, LEFT→1, RIGHT→2, DOWN→3
-  ctx.drawImage(img, p.frame*64,row*64,64,64, sx-8,sy-16,48,48);
+  const dirRow  = DIR_ROW[p.dir];   // 방향 → 시트 행
+  const frameCol = p.frame % 4;     // 0~3 프레임 → 시트 열
+  ctx.drawImage(img, frameCol*64, dirRow*64, 64, 64, sx-8, sy-16, 48, 48);
 }
 
 // ── NPC ──
@@ -756,7 +786,7 @@ function drawBattle(ctx,canvas){
   const charImg=state.images['charmander'];
   if(charImg){
     ctx.save(); ctx.imageSmoothingEnabled=false;
-    ctx.drawImage(charImg,0,DIR_ROW[DIR.DOWN]*64,64,64, W*0.15,H*0.45,96,96);
+    ctx.drawImage(charImg,0,DIR_ROW[0]*64,64,64, W*0.15,H*0.45,96,96);
     ctx.restore();
   }
 
@@ -852,7 +882,7 @@ function roundRect(ctx,x,y,w,h,r){
 function loop(ts){
   const dt=ts-(state.lastTime||ts); state.lastTime=ts;
   if(state.battle.active) updateBattle(dt);
-  else { processMove(); updateNPCs(dt); }
+  else { processMove(); updatePlayer(dt); updateNPCs(dt); }
   updateCamera(window._canvas);
   render(window._canvas,window._ctx);
   requestAnimationFrame(loop);
