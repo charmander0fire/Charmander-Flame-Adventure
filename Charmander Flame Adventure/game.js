@@ -10,7 +10,7 @@ const MAP_ROWS = 60;
 const DIR = { DOWN:0, LEFT:1, RIGHT:2, UP:3 };
 // 파이리 스프라이트: row0=뒤(UP), row1=왼, row2=오른, row3=앞(DOWN) → 이전에 반전돼 있던 거 수정
 // DIR: DOWN=0,LEFT=1,RIGHT=2,UP=3  → 시트: row0=뒤(UP),row1=왼,row2=오른,row3=앞(DOWN)
-const DIR_ROW = { 3:0, 1:1, 2:2, 0:3 };  // key=DIR값, value=시트행
+const DIR_ROW = { 0:0, 1:1, 2:2, 3:3 };  // key=DIR값, value=시트행
 // NPC 스프라이트: row0=앞(DOWN), row1=왼, row2=오른, row3=뒤(UP)
 const NPC_DIR_ROW = { 0:0, 1:1, 2:2, 3:3 };  // key=DIR값, value=시트행
 
