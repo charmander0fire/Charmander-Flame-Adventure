@@ -7,7 +7,7 @@ const TILE = 32;
 const MAP_COLS = 75;
 const MAP_ROWS = 60;
 
-const DIR = { DOWN:0, LEFT:1, RIGHT:2, UP:3 };
+const DIR = { DOWN:3, LEFT:1, RIGHT:2, UP:0 };
 // 파이리 스프라이트: row0=뒤(UP), row1=왼, row2=오른, row3=앞(DOWN) → 이전에 반전돼 있던 거 수정
 const DIR_ROW     = { [DIR.UP]:0, [DIR.LEFT]:1, [DIR.RIGHT]:2, [DIR.DOWN]:3 };
 // NPC 스프라이트: row0=앞(DOWN), row1=왼, row2=오른, row3=뒤(UP)
